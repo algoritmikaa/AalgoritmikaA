@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Алгоритмика — Игра-тренажёр + Редактор уровней</title>
+    <style>
+        :root {
+            --blue: #1a5fdc;
+            --blue-light: #e8f0fe;
+            --orange: #f47920;
+            --orange-light: #fff3e8;
+            --green: #2ecc71;
+            --green-light: #e8faf0;
+            --white: #ffffff;
+            --gray: #f0f2f5;
+            --gray-dark: #555;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            --transition: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: linear-gradient(135deg, #e3f0ff 0%, #f0f4fb 40%, #fff8f2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+        }
+
+        .game-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--white);
+            border-radius: 22px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 92vh;
+            max-height: 97vh;
+        }
+
+        .game-header {
+            background: var(--white);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #eef2f7;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .logo-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--blue), #3b7af0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--blue);
+            letter-spacing: -0.3px;
+            line-height: 1.1;
+        }
+        .logo-slogan {
+            font-size: 0.7rem;
+            color: #777;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .level-badge {
+            background: var(--orange-light);
+            color: var(--orange);
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .stars-collected-header {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 700;
+            color: #e6a817;
+            font-size: 0.9rem;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 22px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            letter-spacing: 0.3px;
+            touch-action: manipulation;
+            white-space: nowrap;
+        }
+        .btn:active {
+            transform: scale(0.95);
+            transition: transform 0.08s;
+        }
+        .btn-run {
+            background: var(--green);
+            color: #fff;
+            box-shadow: 0 3px 12px rgba(46, 204, 113, 0.3);
+        }
+        .btn-run:hover {
+            background: #27ae60;
+            box-shadow: 0 5px 18px rgba(46, 204, 113, 0.45);
+        }
+        .btn-run:disabled {
+            background: #bbb;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .btn-reset {
+            background: #fff;
+            color: #777;
+            border: 2px solid #ddd;
+        }
+        .btn-reset:hover {
+            border-color: #999;
+            color: #444;
+        }
+        .btn-hint {
+            background: #fff8e1;
+            color: #f09d00;
+            border: 2px solid #fae8b0;
+        }
+        .btn-hint:hover {
+            background: #fff0c0;
+        }
+        .btn-next {
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 3px 12px rgba(26, 95, 220, 0.3);
+        }
+        .btn-next:hover {
+            background: #154fc0;
+            box-shadow: 0 5px 18px rgba(26, 95, 220, 0.45);
+        }
+        .btn-editor {
+            background: #9b59b6;
+            color: #fff;
+            box-shadow: 0 3px 12px rgba(155, 89, 182, 0.3);
+        }
+        .btn-editor:hover {
+            background: #8e44ad;
+        }
+
+        .game-main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            flex-direction: row;
+        }
+
+        .grid-panel {
+            flex: 1 1 55%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: #fafbfd;
+            position: relative;
+            min-width: 280px;
+        }
+        .grid-container {
+            display: grid;
+            gap: 3px;
+            background: #dde4f0;
+            border-radius: var(--radius);
+            padding: 6px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.06);
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 520px;
+            max-height: 100%;
+            transition: all var(--transition);
+        }
+        .cell {
+            background: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(16px, 3.5vw, 32px);
+            position: relative;
+            transition: background 0.15s, transform 0.15s;
+            aspect-ratio: 1 / 1;
+            cursor: default;
+            min-width: 0;
+        }
+        .cell.obstacle {
+            background: #555;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .cell.obstacle::after {
+            content: '🧱';
+            font-size: 0.75em;
+        }
+        .cell.finish {
+            background: #fffbe6;
+            animation: finishPulse 1.5s ease-in-out infinite;
+        }
+        .cell.finish::after {
+            content: '🏁';
+            font-size: 0.85em;
+        }
+        @keyframes finishPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(244, 180, 0, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 0 12px rgba(244, 180, 0, 0);
+            }
+        }
+        .cell.star-cell::after {
+            content: '⭐';
+            font-size: 0.7em;
+            animation: starTwinkle 1s ease-in-out infinite;
+        }
+        @keyframes starTwinkle {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.25);
+            }
+        }
+        .cell.star-collected::after {
+            content: '✨';
+            font-size: 0.55em;
+            opacity: 0.5;
+            animation: none;
+        }
+        .cell .robot {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+        }
+        .cell .robot .robot-body {
+            font-size: 0.8em;
+            transition: transform 0.3s;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+        }
+        .cell .robot.sad .robot-body {
+            filter: drop-shadow(0 2px 3px rgba(200, 0, 0, 0.4)) saturate(0.3);
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-6px);
+            }
+            50% {
+                transform: translateX(6px);
+            }
+            75% {
+                transform: translateX(-4px);
+            }
+        }
+        .cell.highlight-exec {
+            background: #fffde0 !important;
+            box-shadow: 0 0 0 3px var(--orange);
+            z-index: 1;
+            border-radius: 8px;
+            animation: highlightPop 0.4s ease;
+        }
+        @keyframes highlightPop {
+            0% {
+                transform: scale(0.9);
+            }
+            60% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .cell.robot-on-finish {
+            background: #e8faf0 !important;
+            animation: successGlow 0.6s ease-in-out infinite alternate;
+        }
+        @keyframes successGlow {
+            from {
+                box-shadow: 0 0 8px var(--green);
+            }
+            to {
+                box-shadow: 0 0 25px var(--green), 0 0 45px #a0e8c0;
+            }
+        }
+        .cell.start-cell {
+            background: #d6eaf8;
+            box-shadow: 0 0 0 3px #2980b9;
+        }
+        .cell.start-cell::after {
+            content: '🚀';
+            font-size: 0.85em;
+        }
+        .cell.editable {
+            cursor: pointer;
+        }
+        .cell.editable:hover {
+            filter: brightness(0.95);
+        }
+
+        .side-panel {
+            flex: 0 0 380px;
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid #eef2f7;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #fdfdff;
+            padding: 12px;
+            gap: 10px;
+            min-width: 280px;
+            max-height: 100%;
+        }
+        .panel-section {
+            background: #fff;
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            border: 1.5px solid #eef2f7;
+        }
+        .panel-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #444;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .panel-title .icon {
+            font-size: 1.1rem;
+        }
+
+        .block-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+        .palette-block {
+            padding: 9px 13px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition);
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .palette-block:active {
+            transform: scale(0.94);
+            transition: transform 0.08s;
+        }
+        .pb-forward {
+            background: #e3f0ff;
+            color: var(--blue);
+            border-color: #c5d9f8;
+        }
+        .pb-forward:hover {
+            background: #d0e4ff;
+            border-color: var(--blue);
+        }
+        .pb-left {
+            background: #fff3e0;
+            color: #e67e22;
+            border-color: #fce0c5;
+        }
+        .pb-left:hover {
+            background: #ffe8d0;
+            border-color: #e67e22;
+        }
+        .pb-right {
+            background: #fff8e1;
+            color: #f09d00;
+            border-color: #fae8b0;
+        }
+        .pb-right:hover {
+            background: #fff0c0;
+            border-color: #f09d00;
+        }
+        .pb-loop {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #c8e6c9;
+            font-weight: 800;
+        }
+        .pb-loop:hover {
+            background: #d4edd5;
+            border-color: #2e7d32;
+        }
+        .pb-if {
+            background: #fce4ec;
+            color: #c62828;
+            border-color: #f8bbd0;
+            font-weight: 800;
+        }
+        .pb-if:hover {
+            background: #fad4df;
+            border-color: #c62828;
+        }
+
+        .program-area {
+            flex: 1;
+            min-height: 120px;
+            max-height: 280px;
+            overflow-y: auto;
+            background: #fafbfd;
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            border: 2px dashed #dde4f0;
+            position: relative;
+            transition: border-color var(--transition);
+        }
+        .program-area.active-drop {
+            border-color: var(--orange);
+            background: #fffdf7;
+        }
+        .program-area .empty-hint {
+            color: #bbb;
+            text-align: center;
+            padding: 25px 10px;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+        .program-block {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            margin: 3px 0;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            border: 2px solid transparent;
+            animation: fadeInBlock 0.25s ease;
+        }
+        @keyframes fadeInBlock {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .program-block.simple-block {
+            background: #fff;
+            border-color: #e0e5ec;
+        }
+        .program-block.loop-block {
+            background: #e8f5e9;
+            border-color: #a5d6a7;
+            border-left: 4px solid #2e7d32;
+        }
+        .program-block.if-block {
+            background: #fce4ec;
+            border-color: #ef9a9a;
+            border-left: 4px solid #c62828;
+        }
+        .program-block .block-label {
+            flex: 1;
+            font-size: 0.78rem;
+        }
+        .program-block .delete-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            background: #e0e0e0;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            transition: all var(--transition);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .program-block .delete-btn:hover {
+            background: #ff5252;
+            color: #fff;
+        }
+        .program-block.executing {
+            border-color: var(--orange) !important;
+            box-shadow: 0 0 0 3px rgba(244, 121, 32, 0.25);
+            background: #fff8f2 !important;
+            transform: scale(1.03);
+        }
+        .program-block .loop-count-badge {
+            background: #2e7d32;
+            color: #fff;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .program-block .loop-count-badge:hover {
+            background: #1b5e20;
+        }
+        .nest-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+            margin-right: 2px;
+            flex-shrink: 0;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .modal {
+            background: #fff;
+            border-radius: 20px;
+            padding: 28px 22px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .modal .trophy {
+            font-size: 70px;
+            animation: bounce 0.6s ease infinite alternate;
+        }
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-20px);
+            }
+        }
+        .modal h2 {
+            color: var(--blue);
+            margin: 10px 0;
+            font-size: 1.4rem;
+        }
+        .modal p {
+            color: #555;
+            margin: 8px 0;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .modal .confetti {
+            position: absolute;
+            pointer-events: none;
+            font-size: 24px;
+            animation: confettiFall 1.5s ease-out forwards;
+        }
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-60px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(120px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .editor-panel {
+            flex: 0 0 380px;
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid #eef2f7;
+            overflow-y: auto;
+            background: #fdfdff;
+            padding: 12px;
+            gap: 10px;
+            min-width: 280px;
+            max-height: 100%;
+        }
+        .editor-tool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .tool-btn {
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            background: #fff;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .tool-btn.active {
+            border-color: var(--blue);
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+        .editor-size-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .editor-size-control input {
+            width: 60px;
+            padding: 6px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            text-align: center;
+            font-weight: 700;
+        }
+        .my-levels-list {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #fafbfd;
+            border-radius: 10px;
+            padding: 6px;
+            border: 1px solid #eee;
+        }
+        .level-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 8px;
+            background: #fff;
+            margin: 3px 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .level-item:hover {
+            background: #f0f0f0;
+        }
+
+        @media (max-width: 768px) {
+            .game-main {
+                flex-direction: column;
+            }
+            .side-panel,
+            .editor-panel {
+                flex: 0 0 auto;
+                max-height: none;
+                border-left: none;
+                border-top: 2px solid #eef2f7;
+                padding: 8px;
+                gap: 6px;
+            }
+            .grid-panel {
+                padding: 8px;
+                min-height: 280px;
+                flex: 1 1 auto;
+            }
+            .grid-container {
+                max-width: 380px;
+                gap: 2px;
+                padding: 4px;
+            }
+            .cell {
+                font-size: clamp(12px, 4vw, 22px);
+                border-radius: 4px;
+            }
+            .program-area {
+                max-height: 160px;
+            }
+            .palette-block {
+                padding: 7px 10px;
+                font-size: 0.7rem;
+                border-radius: 16px;
+            }
+            .btn {
+                padding: 8px 14px;
+                font-size: 0.75rem;
+                border-radius: 18px;
+            }
+            .game-header {
+                padding: 8px 12px;
+                gap: 4px;
+            }
+            .logo-text {
+                font-size: 1rem;
+            }
+            .logo-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 20px;
+                border-radius: 8px;
+            }
+        }
+        @media (max-width: 400px) {
+            .grid-container {
+                max-width: 280px;
+                gap: 1.5px;
+                padding: 3px;
+            }
+            .cell {
+                font-size: clamp(9px, 3.5vw, 16px);
+                border-radius: 3px;
+            }
+            .palette-block {
+                padding: 5px 8px;
+                font-size: 0.65rem;
+                border-radius: 12px;
+                gap: 3px;
+            }
+            .program-block {
+                padding: 5px 7px;
+                font-size: 0.68rem;
+            }
+            .btn {
+                padding: 6px 10px;
+                font-size: 0.7rem;
+                border-radius: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper" id="gameWrapper">
+        <header class="game-header">
+            <div class="logo-block">
+                <div class="logo-icon">🤖</div>
+                <div>
+                    <div class="logo-text">Алгоритмика</div>
+                    <div class="logo-slogan">Учим детей программировать и мыслить</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <span class="stars-collected-header" id="starsHeader">⭐ 0 / 0</span>
+                <span class="level-badge" id="levelBadge">Уровень 1</span>
+                <button class="btn btn-editor" id="btnEditorToggle">🛠 Редактор</button>
+            </div>
+        </header>
+
+        <div class="game-main">
+            <div class="grid-panel" id="gridPanel">
+                <div class="grid-container" id="gridContainer"></div>
+            </div>
+
+            <!-- Панель игры (по умолчанию) -->
+            <div class="side-panel" id="sidePanel">
+                <div class="panel-section">
+                    <div class="panel-title"><span class="icon">🧩</span> Блоки команд</div>
+                    <div class="block-palette" id="blockPalette">
+                        <button class="palette-block pb-forward" data-cmd="forward">⬆ Вперёд</button>
+                        <button class="palette-block pb-left" data-cmd="left">↰ Налево</button>
+                        <button class="palette-block pb-right" data-cmd="right">↱ Направо</button>
+                        <button class="palette-block pb-loop" data-cmd="loop">🔄 Повтори</button>
+                        <button class="palette-block pb-if" data-cmd="if">❓ Если препятствие</button>
+                    </div>
+                </div>
+                <div class="panel-section" style="flex:1;display:flex;flex-direction:column;">
+                    <div class="panel-title"><span class="icon">📝</span> Программа <span style="font-weight:400;font-size:0.7rem;color:#999;">(кликай блоки выше)</span></div>
+                    <div class="program-area" id="programArea">
+                        <div class="empty-hint" id="emptyHint">Собери программу из блоков,<br>затем нажми «Запустить» 🚀</div>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-run" id="btnRun">▶ Запустить</button>
+                    <button class="btn btn-reset" id="btnReset">🗑 Сброс</button>
+                    <button class="btn btn-hint" id="btnHint">💡 Подсказка</button>
+                </div>
+                <button class="btn btn-next" id="btnNext" style="display:none;width:100%;">Следующий уровень ➡</button>
+            </div>
+
+            <!-- Панель редактора (скрыта по умолчанию) -->
+            <div class="editor-panel" id="editorPanel" style="display:none;">
+                <div class="panel-section">
+                    <div class="panel-title">🛠 Инструменты редактора</div>
+                    <div class="editor-tool" id="editorTools">
+                        <button class="tool-btn active" data-tool="empty">⬜ Пусто</button>
+                        <button class="tool-btn" data-tool="obstacle">🧱 Стена</button>
+                        <button class="tool-btn" data-tool="star">⭐ Звезда</button>
+                        <button class="tool-btn" data-tool="finish">🏁 Финиш</button>
+                        <button class="tool-btn" data-tool="start">🚀 Старт</button>
+                    </div>
+                    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+                        <span style="font-weight:700;font-size:0.8rem;">Направление:</span>
+                        <button class="tool-btn" id="dirUp" style="font-size:1.2rem;">⬆️</button>
+                        <button class="tool-btn" id="dirRight" style="font-size:1.2rem;">➡️</button>
+                        <button class="tool-btn" id="dirDown" style="font-size:1.2rem;">⬇️</button>
+                        <button class="tool-btn" id="dirLeft" style="font-size:1.2rem;">⬅️</button>
+                        <span id="currentDirDisplay" style="font-weight:700;">➡️</span>
+                    </div>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-title">📐 Размер сетки</div>
+                    <div class="editor-size-control">
+                        <span>Строки:</span>
+                        <input type="number" id="rowsInput" value="6" min="3" max="10" step="1">
+                        <span>Колонки:</span>
+                        <input type="number" id="colsInput" value="6" min="3" max="10" step="1">
+                        <button class="btn btn-reset" id="applySizeBtn">Применить</button>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-run" id="saveLevelBtn">💾 Сохранить</button>
+                    <button class="btn btn-hint" id="shareLevelBtn">🔗 Поделиться</button>
+                    <button class="btn btn-reset" id="clearEditorBtn">🗑 Очистить</button>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-title">📂 Мои уровни</div>
+                    <div class="my-levels-list" id="myLevelsList">
+                        <div style="color:#999;text-align:center;padding:10px;">Нет сохранённых уровней</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" style="display:none;">
+        <div class="modal" id="modalContent"></div>
+    </div>
+
+    <script>
+        (function() {
+            // ==================== УРОВНИ ====================
+            const levels = [{
+                name: 'Первые шаги',
+                gridRows: 6,
+                gridCols: 6,
+                grid: [
+                    [0, 0, 0, 0, 0, 2],
+                    [0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1],
+                    [1, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                startX: 0,
+                startY: 5,
+                startDir: 1,
+                hint: 'Используй блоки «Вперёд» и «Налево», чтобы дойти до финиша и собрать все звёзды.',
+                availableBlocks: ['forward', 'left', 'right'],
+            }, {
+                name: 'Змейка',
+                gridRows: 6,
+                gridCols: 6,
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [1, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [1, 0, 0, 0, 1, 0],
+                    [0, 0, 1, 0, 0, 2],
+                ],
+                startX: 0,
+                startY: 5,
+                startDir: 1,
+                hint: 'Подумай, как пройти змейкой: вперёд, поворот, снова вперёд… Собери все звёзды!',
+                availableBlocks: ['forward', 'left', 'right'],
+            }, {
+                name: 'Сила циклов',
+                gridRows: 7,
+                gridCols: 7,
+                grid: [
+                    [0, 0, 0, 0, 0, 0, 2],
+                    [0, 0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [1, 1, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                ],
+                startX: 0,
+                startY: 6,
+                startDir: 1,
+                hint: 'Путь повторяется: 2 вперёд, налево, 1 вперёд, направо… Используй блок «Повтори»!',
+                availableBlocks: ['forward', 'left', 'right', 'loop'],
+            }, {
+                name: 'Обходи препятствия',
+                gridRows: 8,
+                gridCols: 8,
+                grid: [
+                    [0, 0, 0, 0, 0, 0, 0, 2],
+                    [0, 0, 0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, -1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 0],
+                    [1, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                ],
+                startX: 0,
+                startY: 7,
+                startDir: 1,
+                hint: 'На пути есть препятствие! Используй блок «Если препятствие», чтобы обойти его.',
+                availableBlocks: ['forward', 'left', 'right', 'loop', 'if'],
+            }];
+
+            // ==================== СОСТОЯНИЕ ИГРЫ ====================
+            let currentLevelIndex = 0;
+            let unlockedLevels = 1;
+            let robotX, robotY, robotDir;
+            let collectedStars;
+            let totalStarsInLevel;
+            let programRoot;
+            let currentContainer;
+            let isExecuting = false;
+            let executionAborted = false;
+            let isEditorMode = false;
+
+            // Состояние редактора
+            let editorGrid = []; // 2D массив: 0 пусто, -1 стена, 1 звезда, 2 финиш
+            let editorRows = 6;
+            let editorCols = 6;
+            let editorStartX = 0;
+            let editorStartY = 0;
+            let editorStartDir = 1; // 0 вверх, 1 право, 2 вниз, 3 лево
+            let currentTool = 'empty';
+
+            // ==================== DOM-ЭЛЕМЕНТЫ ====================
+            const gridContainer = document.getElementById('gridContainer');
+            const programArea = document.getElementById('programArea');
+            const emptyHint = document.getElementById('emptyHint');
+            const btnRun = document.getElementById('btnRun');
+            const btnReset = document.getElementById('btnReset');
+            const btnHint = document.getElementById('btnHint');
+            const btnNext = document.getElementById('btnNext');
+            const levelBadge = document.getElementById('levelBadge');
+            const starsHeader = document.getElementById('starsHeader');
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalContent = document.getElementById('modalContent');
+            const blockPalette = document.getElementById('blockPalette');
+            const sidePanel = document.getElementById('sidePanel');
+            const editorPanel = document.getElementById('editorPanel');
+            const btnEditorToggle = document.getElementById('btnEditorToggle');
+            const editorTools = document.getElementById('editorTools');
+            const rowsInput = document.getElementById('rowsInput');
+            const colsInput = document.getElementById('colsInput');
+            const applySizeBtn = document.getElementById('applySizeBtn');
+            const saveLevelBtn = document.getElementById('saveLevelBtn');
+            const shareLevelBtn = document.getElementById('shareLevelBtn');
+            const clearEditorBtn = document.getElementById('clearEditorBtn');
+            const myLevelsList = document.getElementById('myLevelsList');
+            const dirUp = document.getElementById('dirUp');
+            const dirRight = document.getElementById('dirRight');
+            const dirDown = document.getElementById('dirDown');
+            const dirLeft = document.getElementById('dirLeft');
+            const currentDirDisplay = document.getElementById('currentDirDisplay');
+
+            // ==================== ФУНКЦИИ ИГРЫ ====================
+            function createProgramNode(type, extra = {}) {
+                return { type, children: [], loopCount: extra.loopCount || 3, ...extra };
+            }
+
+            function resetProgram() {
+                programRoot = createProgramNode('program');
+                currentContainer = programRoot;
+                renderProgram();
+            }
+
+            function addBlockToContainer(container, blockType) {
+                if (blockType === 'loop') {
+                    const loopNode = createProgramNode('loop', { loopCount: 3 });
+                    container.children.push(loopNode);
+                    currentContainer = loopNode;
+                } else if (blockType === 'if') {
+                    const ifNode = createProgramNode('if_obstacle');
+                    container.children.push(ifNode);
+                    currentContainer = ifNode;
+                } else {
+                    container.children.push(createProgramNode(blockType));
+                }
+            }
+
+            function exitCurrentContainer() {
+                const parent = findParentContainer(programRoot, currentContainer);
+                if (parent && parent.type !== 'program') currentContainer = parent;
+                else currentContainer = programRoot;
+                renderProgram();
+            }
+
+            function findParentContainer(root, target) {
+                if (root === target) return null;
+                if (root.children) {
+                    for (const child of root.children) {
+                        if (child === target) return root;
+                        const found = findParentContainer(child, target);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+
+            function deleteBlockByPath(pathIndices) {
+                let node = programRoot;
+                for (let i = 0; i < pathIndices.length - 1; i++) {
+                    node = node.children[pathIndices[i]];
+                    if (!node) return;
+                }
+                const lastIdx = pathIndices[pathIndices.length - 1];
+                if (node.children && lastIdx >= 0 && lastIdx < node.children.length) {
+                    const removed = node.children.splice(lastIdx, 1)[0];
+                    if (isNodeInside(removed, currentContainer) || removed === currentContainer) {
+                        currentContainer = programRoot;
+                    }
+                }
+            }
+
+            function isNodeInside(container, target) {
+                if (container === target) return true;
+                if (container.children) {
+                    for (const child of container.children) {
+                        if (isNodeInside(child, target)) return true;
+                    }
+                }
+                return false;
+            }
+
+            function changeLoopCount(node, delta) {
+                if (node.type === 'loop') {
+                    node.loopCount = Math.max(1, Math.min(8, node.loopCount + delta));
+                }
+            }
+
+            function flattenProgram(node, depth, pathPrefix) {
+                const result = [];
+                if (node.type === 'program') {
+                    node.children.forEach((child, i) => result.push(...flattenProgram(child, 0, [...pathPrefix, i])));
+                } else {
+                    result.push({ node, depth, path: [...pathPrefix] });
+                    if (node.children && node.children.length > 0) {
+                        node.children.forEach((child, i) => result.push(...flattenProgram(child, depth + 1, [...pathPrefix, i
+                            ])));
+                    }
+                }
+                return result;
+            }
+
+            function renderGrid() {
+                if (isEditorMode) {
+                    renderEditorGrid();
+                    return;
+                }
+                const level = levels[currentLevelIndex];
+                const rows = level.gridRows;
+                const cols = level.gridCols;
+                gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                gridContainer.innerHTML = '';
+                for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.x = x;
+                        cell.dataset.y = y;
+                        const cellValue = level.grid[y][x];
+                        if (cellValue === -1) cell.classList.add('obstacle');
+                        else if (cellValue === 2) cell.classList.add('finish');
+                        else if (cellValue === 1) {
+                            const key = `${x},${y}`;
+                            if (collectedStars && collectedStars.has(key)) cell.classList.add('star-collected');
+                            else cell.classList.add('star-cell');
+                        }
+                        gridContainer.appendChild(cell);
+                    }
+                }
+                renderRobot();
+            }
+
+            function renderRobot() {
+                const oldRobot = gridContainer.querySelector('.robot');
+                if (oldRobot) oldRobot.remove();
+                const cell = gridContainer.querySelector(`.cell[data-x="${robotX}"][data-y="${robotY}"]`);
+                if (!cell) return;
+                const robotEl = document.createElement('div');
+                robotEl.className = 'robot';
+                const body = document.createElement('span');
+                body.className = 'robot-body';
+                const dirArrows = ['⬆️', '➡️', '⬇️', '⬅️'];
+                body.textContent = '🤖' + dirArrows[robotDir];
+                body.style.fontSize = 'clamp(18px, 4vw, 36px)';
+                robotEl.appendChild(body);
+                cell.appendChild(robotEl);
+                const level = isEditorMode ? null : levels[currentLevelIndex];
+                if (level && level.grid[robotY][robotX] === 2 && collectedStars.size >= totalStarsInLevel) {
+                    cell.classList.add('robot-on-finish');
+                }
+            }
+
+            function renderProgram() {
+                programArea.innerHTML = '';
+                const flatBlocks = flattenProgram(programRoot, 0, []);
+                if (flatBlocks.length === 0) {
+                    const hint = document.createElement('div');
+                    hint.className = 'empty-hint';
+                    hint.textContent = 'Собери программу из блоков, затем нажми «Запустить» 🚀';
+                    programArea.appendChild(hint);
+                } else {
+                    flatBlocks.forEach((item, index) => {
+                        const blockEl = createProgramBlockElement(item, index);
+                        programArea.appendChild(blockEl);
+                    });
+                }
+                updateExitButton();
+                updateEmptyHint();
+            }
+
+            function updateEmptyHint() {
+                const eh = programArea.querySelector('.empty-hint');
+                const flatBlocks = flattenProgram(programRoot, 0, []);
+                if (flatBlocks.length === 0 && !eh) {
+                    const hint = document.createElement('div');
+                    hint.className = 'empty-hint';
+                    hint.textContent = 'Собери программу из блоков, затем нажми «Запустить» 🚀';
+                    programArea.appendChild(hint);
+                }
+            }
+
+            function updateExitButton() {
+                const oldExit = programArea.querySelector('.exit-container-btn');
+                if (oldExit) oldExit.remove();
+                if (currentContainer !== programRoot && currentContainer.type !== 'program') {
+                    const exitBtn = document.createElement('button');
+                    exitBtn.className = 'palette-block pb-left exit-container-btn';
+                    exitBtn.textContent = '↩ Выйти из блока';
+                    exitBtn.style.cssText =
+                        'margin-top:6px;font-size:0.7rem;padding:6px 12px;background:#fff0f0;border-color:#fcc;color:#c0392b;';
+                    exitBtn.addEventListener('click', (e) => { e.stopPropagation();
+                        exitCurrentContainer(); });
+                    programArea.appendChild(exitBtn);
+                }
+            }
+
+            function createProgramBlockElement(item, index) {
+                const { node, depth, path } = item;
+                const blockEl = document.createElement('div');
+                blockEl.className = 'program-block';
+                blockEl.dataset.path = path.join(',');
+                blockEl.style.marginLeft = `${depth * 18}px`;
+                let icon = '',
+                    label = '',
+                    extraClass = 'simple-block';
+                switch (node.type) {
+                    case 'forward':
+                        icon = '⬆';
+                        label = 'Вперёд';
+                        break;
+                    case 'left':
+                        icon = '↰';
+                        label = 'Налево';
+                        break;
+                    case 'right':
+                        icon = '↱';
+                        label = 'Направо';
+                        break;
+                    case 'loop':
+                        icon = '🔄';
+                        label = `Повтори ${node.loopCount} раз`;
+                        extraClass = 'loop-block';
+                        break;
+                    case 'if_obstacle':
+                        icon = '❓';
+                        label = 'Если препятствие';
+                        extraClass = 'if-block';
+                        break;
+                    default:
+                        icon = '•';
+                        label = node.type;
+                }
+                blockEl.classList.add(extraClass);
+                blockEl.innerHTML = `
+                    <span style="flex-shrink:0;">${icon}</span>
+                    <span class="block-label">${label}</span>
+                    ${node.type === 'loop' ? `<span class="loop-count-badge" data-action="loop-count">${node.loopCount}</span>` : ''}
+                    <button class="delete-btn" data-action="delete" title="Удалить">×</button>
+                `;
+                blockEl.addEventListener('click', (e) => {
+                    if (isExecuting) return;
+                    const action = e.target.dataset.action;
+                    if (action === 'delete') { e.stopPropagation();
+                        deleteBlockByPath(path);
+                        renderProgram(); return; }
+                    if (action === 'loop-count') { e.stopPropagation();
+                        changeLoopCount(node, 1); if (node.loopCount > 8) node.loopCount = 2;
+                        renderProgram(); return; }
+                    if ((node.type === 'loop' || node.type === 'if_obstacle') && currentContainer !== node) {
+                        currentContainer = node;
+                        renderProgram();
+                    } else if (currentContainer === node && (node.type === 'loop' || node.type === 'if_obstacle')) {
+                        exitCurrentContainer();
+                    }
+                });
+                const badge = blockEl.querySelector('.loop-count-badge');
+                if (badge) {
+                    badge.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        changeLoopCount(node, -1);
+                        if (node.loopCount < 1) node.loopCount = 8;
+                        renderProgram();
+                    });
+                }
+                return blockEl;
+            }
+
+            function highlightExecutingBlock(pathStr) {
+                programArea.querySelectorAll('.program-block.executing').forEach(el => el.classList.remove('executing'));
+                if (pathStr !== null && pathStr !== undefined) {
+                    const el = programArea.querySelector(`.program-block[data-path="${pathStr}"]`);
+                    if (el) { el.classList.add('executing');
+                        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+                }
+            }
+
+            function highlightCell(x, y) {
+                gridContainer.querySelectorAll('.cell.highlight-exec').forEach(c => c.classList.remove('highlight-exec'));
+                const cell = gridContainer.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+                if (cell) cell.classList.add('highlight-exec');
+            }
+
+            function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+            async function executeProgram() {
+                if (isExecuting) return;
+                isExecuting = true;
+                executionAborted = false;
+                btnRun.disabled = true;
+                btnReset.disabled = true;
+                btnNext.style.display = 'none';
+                let level;
+                if (isEditorMode) {
+                    level = getEditorLevelObject();
+                } else {
+                    level = levels[currentLevelIndex];
+                }
+                robotX = level.startX;
+                robotY = level.startY;
+                robotDir = level.startDir;
+                collectedStars = new Set();
+                totalStarsInLevel = countStarsInLevel(level);
+                renderGrid();
+                updateStarsHeader();
+                let success = true;
+                let errorMessage = '';
+                try {
+                    await executeNode(programRoot, '');
+                } catch (err) {
+                    if (!executionAborted) { success = false;
+                        errorMessage = err.message || 'Ошибка выполнения'; } else { success = false;
+                        errorMessage = 'Выполнение прервано'; }
+                }
+                if (success && !executionAborted) {
+                    const atFinish = level.grid[robotY][robotX] === 2;
+                    const allStarsCollected = collectedStars.size >= totalStarsInLevel;
+                    if (atFinish && allStarsCollected) {
+                        await sleep(300);
+                        renderRobot();
+                        showSuccessModal();
+                    } else if (atFinish && !allStarsCollected) {
+                        success = false;
+                        errorMessage = 'Робот дошёл до финиша, но не все звёзды собраны! Попробуй снова. 🌟';
+                        showRobotSad();
+                    } else if (!atFinish) {
+                        success = false;
+                        errorMessage = 'Робот не дошёл до финиша. Проверь программу! 🤔';
+                        showRobotSad();
+                    }
+                } else if (!success && errorMessage && !executionAborted) { showRobotSad();
+                    showErrorToast(errorMessage); }
+                if (!success && !executionAborted && errorMessage && !errorMessage.includes('финиша') && !errorMessage
+                    .includes('звёзды')) { showErrorToast(errorMessage); }
+                isExecuting = false;
+                executionAborted = false;
+                btnRun.disabled = false;
+                btnReset.disabled = false;
+                highlightExecutingBlock(null);
+                gridContainer.querySelectorAll('.cell.highlight-exec').forEach(c => c.classList.remove('highlight-exec'));
+                updateStarsHeader();
+                renderGrid();
+            }
+
+            async function executeNode(node, pathPrefix) {
+                if (executionAborted) return;
+                let level;
+                if (isEditorMode) level = getEditorLevelObject();
+                else level = levels[currentLevelIndex];
+                const rows = level.gridRows;
+                const cols = level.gridCols;
+                if (node.type === 'forward') {
+                    const [nx, ny] = getForwardCell(robotX, robotY, robotDir);
+                    if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) throw new Error('Робот упёрся в край поля! 📦');
+                    if (level.grid[ny][nx] === -1) throw new Error('Робот столкнулся с препятствием! 🧱');
+                    robotX = nx;
+                    robotY = ny;
+                    if (level.grid[robotY][robotX] === 1) collectedStars.add(`${robotX},${robotY}`);
+                    highlightCell(robotX, robotY);
+                    highlightExecutingBlock(pathPrefix);
+                    renderGrid();
+                    updateStarsHeader();
+                    await sleep(450);
+                } else if (node.type === 'left') {
+                    robotDir = (robotDir + 3) % 4;
+                    highlightExecutingBlock(pathPrefix);
+                    renderGrid();
+                    await sleep(350);
+                } else if (node.type === 'right') {
+                    robotDir = (robotDir + 1) % 4;
+                    highlightExecutingBlock(pathPrefix);
+                    renderGrid();
+                    await sleep(350);
+                } else if (node.type === 'loop') {
+                    for (let i = 0; i < node.loopCount; i++) {
+                        if (executionAborted) return;
+                        for (let j = 0; j < node.children.length; j++) await executeNode(node.children[j],
+                            `${pathPrefix},${j}`);
+                    }
+                } else if (node.type === 'if_obstacle') {
+                    const [nx, ny] = getForwardCell(robotX, robotY, robotDir);
+                    const isObstacle = (nx < 0 || nx >= cols || ny < 0 || ny >= rows) || level.grid[ny][nx] === -1;
+                    highlightExecutingBlock(pathPrefix);
+                    await sleep(200);
+                    if (isObstacle) {
+                        for (let j = 0; j < node.children.length; j++) {
+                            if (executionAborted) return;
+                            await executeNode(node.children[j], `${pathPrefix},${j}`);
+                        }
+                    }
+                } else if (node.type === 'program') {
+                    for (let j = 0; j < node.children.length; j++) {
+                        if (executionAborted) return;
+                        await executeNode(node.children[j], `${j}`);
+                    }
+                }
+            }
+
+            function getForwardCell(x, y, dir) {
+                switch (dir) {
+                    case 0:
+                        return [x, y - 1];
+                    case 1:
+                        return [x + 1, y];
+                    case 2:
+                        return [x, y + 1];
+                    case 3:
+                        return [x - 1, y];
+                    default:
+                        return [x, y];
+                }
+            }
+
+            function countStarsInLevel(level) {
+                let count = 0;
+                for (let y = 0; y < level.gridRows; y++)
+                    for (let x = 0; x < level.gridCols; x++)
+                        if (level.grid[y][x] === 1) count++;
+                return count;
+            }
+
+            function showRobotSad() {
+                const cell = gridContainer.querySelector(`.cell[data-x="${robotX}"][data-y="${robotY}"]`);
+                if (cell) {
+                    const robotEl = cell.querySelector('.robot');
+                    if (robotEl) { robotEl.classList.add('sad');
+                        setTimeout(() => robotEl.classList.remove('sad'), 1200); }
+                }
+            }
+
+            function showErrorToast(msg) {
+                const toast = document.createElement('div');
+                toast.textContent = '😢 ' + msg;
+                toast.style.cssText = `
+                    position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+                    background:#ff5252;color:#fff;padding:12px 22px;border-radius:25px;
+                    font-weight:700;font-size:0.9rem;z-index:80;box-shadow:0 6px 20px rgba(255,82,82,0.4);
+                    animation: popIn 0.3s ease;max-width:90vw;text-align:center;
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.4s';
+                    setTimeout(() => toast.remove(), 400); }, 2200);
+            }
+
+            function updateStarsHeader() {
+                const total = totalStarsInLevel || countStarsInLevel(isEditorMode ? getEditorLevelObject() : levels[
+                    currentLevelIndex]);
+                starsHeader.textContent = `⭐ ${collectedStars.size} / ${total}`;
+            }
+
+            function showSuccessModal() {
+                const level = isEditorMode ? getEditorLevelObject() : levels[currentLevelIndex];
+                spawnConfetti();
+                modalContent.innerHTML = `
+                    <div class="trophy">🏆</div>
+                    <h2>Уровень пройден!</h2>
+                    <p><strong>«${level.name || 'Пользовательский уровень'}»</strong> — ты справился!</p>
+                    <p style="color:var(--blue);font-weight:700;">Ты развил логику и алгоритмическое мышление! 🧠</p>
+                    <p style="font-size:0.8rem;color:#888;">Собрано звёзд: ${collectedStars.size} / ${totalStarsInLevel}</p>
+                    ${!isEditorMode && currentLevelIndex < levels.length - 1 ?
+                        `<button class="btn btn-next" id="modalNextBtn" style="margin-top:12px;">Следующий уровень ➡</button>` :
+                        `<p style="color:var(--green);font-weight:700;margin-top:10px;">🎉 Отличная работа!</p>`
+                    }
+                    <button class="btn btn-reset" id="modalCloseBtn" style="margin-top:8px;">Закрыть</button>
+                `;
+                modalOverlay.style.display = 'flex';
+                document.getElementById('modalCloseBtn')?.addEventListener('click', closeModal);
+                document.getElementById('modalNextBtn')?.addEventListener('click', () => { closeModal();
+                    goToNextLevel(); });
+                if (!isEditorMode && currentLevelIndex + 1 < levels.length && unlockedLevels <= currentLevelIndex + 1) {
+                    unlockedLevels = Math.max(unlockedLevels, currentLevelIndex + 2);
+                }
+                btnNext.style.display = (!isEditorMode && currentLevelIndex < levels.length - 1) ? 'inline-block' : 'none';
+            }
+
+            function closeModal() {
+                modalOverlay.style.display = 'none';
+                modalContent.innerHTML = '';
+                document.querySelectorAll('.confetti').forEach(c => c.remove());
+            }
+
+            function spawnConfetti() {
+                const emojis = ['🎉', '🌟', '✨', '💫', '🎊', '⭐', '🚀', '💡', '🧩', '🤖'];
+                for (let i = 0; i < 35; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('span');
+                        confetti.className = 'confetti';
+                        confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                        confetti.style.left = Math.random() * 90 + '%';
+                        confetti.style.top = '-30px';
+                        confetti.style.position = 'fixed';
+                        confetti.style.zIndex = '150';
+                        confetti.style.fontSize = (18 + Math.random() * 30) + 'px';
+                        confetti.style.animationDuration = (1.2 + Math.random() * 2) + 's';
+                        document.body.appendChild(confetti);
+                        setTimeout(() => confetti.remove(), 2500);
+                    }, i * 30);
+                }
+            }
+
+            function goToNextLevel() {
+                if (!isEditorMode && currentLevelIndex < levels.length - 1) {
+                    currentLevelIndex++;
+                    loadLevel(currentLevelIndex);
+                }
+            }
+
+            function loadLevel(index) {
+                if (isEditorMode) return;
+                if (index >= levels.length) index = levels.length - 1;
+                if (index >= unlockedLevels) index = unlockedLevels - 1;
+                currentLevelIndex = index;
+                const level = levels[currentLevelIndex];
+                robotX = level.startX;
+                robotY = level.startY;
+                robotDir = level.startDir;
+                collectedStars = new Set();
+                totalStarsInLevel = countStarsInLevel(level);
+                resetProgram();
+                currentContainer = programRoot;
+                renderGrid();
+                renderProgram();
+                updateStarsHeader();
+                levelBadge.textContent = `Уровень ${currentLevelIndex + 1}: ${level.name}`;
+                btnNext.style.display = 'none';
+                btnRun.disabled = false;
+                btnReset.disabled = false;
+                isExecuting = false;
+                executionAborted = false;
+                highlightExecutingBlock(null);
+                gridContainer.querySelectorAll('.cell.highlight-exec').forEach(c => c.classList.remove('highlight-exec'));
+                gridContainer.querySelectorAll('.cell.robot-on-finish').forEach(c => c.classList.remove('robot-on-finish'));
+                updatePaletteAvailability();
+                programArea.querySelector('.exit-container-btn')?.remove();
+                updateEmptyHint();
+            }
+
+            function updatePaletteAvailability() {
+                if (isEditorMode) {
+                    blockPalette.querySelectorAll('.palette-block').forEach(b => { b.style.opacity = '1';
+                        b.style.pointerEvents = 'auto';
+                        b.style.display = ''; });
+                    return;
+                }
+                const level = levels[currentLevelIndex];
+                const available = level.availableBlocks || ['forward', 'left', 'right', 'loop', 'if'];
+                blockPalette.querySelectorAll('.palette-block').forEach(btn => {
+                    const cmd = btn.dataset.cmd;
+                    if (available.includes(cmd)) { btn.style.opacity = '1';
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.display = ''; } else { btn.style.opacity = '0.4';
+                        btn.style.pointerEvents = 'none';
+                        btn.style.display = ''; }
+                });
+            }
+
+            // ==================== РЕДАКТОР УРОВНЕЙ ====================
+            function getEditorLevelObject() {
+                return {
+                    name: 'Пользовательский',
+                    gridRows: editorRows,
+                    gridCols: editorCols,
+                    grid: editorGrid,
+                    startX: editorStartX,
+                    startY: editorStartY,
+                    startDir: editorStartDir,
+                    availableBlocks: ['forward', 'left', 'right', 'loop', 'if'],
+                    hint: 'Твой собственный уровень!',
+                };
+            }
+
+            function initEditorGrid() {
+                editorGrid = Array(editorRows).fill().map(() => Array(editorCols).fill(0));
+                editorStartX = 0;
+                editorStartY = 0;
+                editorStartDir = 1;
+                currentTool = 'empty';
+                document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+                document.querySelector('.tool-btn[data-tool="empty"]').classList.add('active');
+                updateDirDisplay();
+            }
+
+            function renderEditorGrid() {
+                gridContainer.style.gridTemplateColumns = `repeat(${editorCols}, 1fr)`;
+                gridContainer.style.gridTemplateRows = `repeat(${editorRows}, 1fr)`;
+                gridContainer.innerHTML = '';
+                for (let y = 0; y < editorRows; y++) {
+                    for (let x = 0; x < editorCols; x++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell editable';
+                        cell.dataset.x = x;
+                        cell.dataset.y = y;
+                        const val = editorGrid[y][x];
+                        if (val === -1) cell.classList.add('obstacle');
+                        else if (val === 2) cell.classList.add('finish');
+                        else if (val === 1) cell.classList.add('star-cell');
+                        if (x === editorStartX && y === editorStartY) cell.classList.add('start-cell');
+                        cell.addEventListener('click', () => handleEditorCellClick(x, y));
+                        gridContainer.appendChild(cell);
+                    }
+                }
+                // Показываем робота на старте (игровой робот не активен, но для наглядности)
+                if (!document.querySelector('.robot')) {
+                    robotX = editorStartX;
+                    robotY = editorStartY;
+                    robotDir = editorStartDir;
+                    renderRobot();
+                }
+            }
+
+            function handleEditorCellClick(x, y) {
+                if (currentTool === 'start') {
+                    editorStartX = x;
+                    editorStartY = y;
+                    renderEditorGrid();
+                } else {
+                    const map = { 'empty': 0, 'obstacle': -1, 'star': 1, 'finish': 2 };
+                    editorGrid[y][x] = map[currentTool] || 0;
+                    // Если ставим финиш, убираем другие финиши
+                    if (currentTool === 'finish') {
+                        for (let cy = 0; cy < editorRows; cy++) {
+                            for (let cx = 0; cx < editorCols; cx++) {
+                                if (editorGrid[cy][cx] === 2 && (cx !== x || cy !== y)) editorGrid[cy][cx] = 0;
+                            }
+                        }
+                    }
+                    renderEditorGrid();
+                }
+            }
+
+            function updateDirDisplay() {
+                const arrows = ['⬆️', '➡️', '⬇️', '⬅️'];
+                currentDirDisplay.textContent = arrows[editorStartDir];
+                [dirUp, dirRight, dirDown, dirLeft].forEach(b => b.classList.remove('active'));
+                if (editorStartDir === 0) dirUp.classList.add('active');
+                if (editorStartDir === 1) dirRight.classList.add('active');
+                if (editorStartDir === 2) dirDown.classList.add('active');
+                if (editorStartDir === 3) dirLeft.classList.add('active');
+            }
+
+            function saveLevelToStorage(name) {
+                const customLevels = JSON.parse(localStorage.getItem('algoritmikaCustomLevels') || '[]');
+                const levelData = {
+                    name,
+                    gridRows: editorRows,
+                    gridCols: editorCols,
+                    grid: editorGrid,
+                    startX: editorStartX,
+                    startY: editorStartY,
+                    startDir: editorStartDir,
+                    date: new Date().toISOString(),
+                };
+                customLevels.push(levelData);
+                localStorage.setItem('algoritmikaCustomLevels', JSON.stringify(customLevels));
+                renderMyLevels();
+                showErrorToast('✅ Уровень сохранён!');
+            }
+
+            function loadCustomLevel(levelData) {
+                editorRows = levelData.gridRows;
+                editorCols = levelData.gridCols;
+                editorGrid = levelData.grid;
+                editorStartX = levelData.startX;
+                editorStartY = levelData.startY;
+                editorStartDir = levelData.startDir;
+                rowsInput.value = editorRows;
+                colsInput.value = editorCols;
+                updateDirDisplay();
+                if (!isEditorMode) toggleEditorMode();
+                else renderEditorGrid();
+            }
+
+            function shareLevel() {
+                const levelData = getEditorLevelObject();
+                const json = JSON.stringify({
+                    gridRows: editorRows,
+                    gridCols: editorCols,
+                    grid: editorGrid,
+                    startX: editorStartX,
+                    startY: editorStartY,
+                    startDir: editorStartDir,
+                });
+                const encoded = btoa(unescape(encodeURIComponent(json)));
+                const url = `${window.location.origin}${window.location.pathname}?custom=${encoded}`;
+                navigator.clipboard.writeText(url).then(() => {
+                    showErrorToast('🔗 Ссылка скопирована! Отправь её другу.');
+                }).catch(() => {
+                    prompt('Скопируй эту ссылку:', url);
+                });
+            }
+
+            function renderMyLevels() {
+                const customLevels = JSON.parse(localStorage.getItem('algoritmikaCustomLevels') || '[]');
+                myLevelsList.innerHTML = '';
+                if (customLevels.length === 0) {
+                    myLevelsList.innerHTML =
+                        '<div style="color:#999;text-align:center;padding:10px;">Нет сохранённых уровней</div>';
+                } else {
+                    customLevels.forEach((lvl, idx) => {
+                        const item = document.createElement('div');
+                        item.className = 'level-item';
+                        item.innerHTML =
+                            `<span>${lvl.name || 'Уровень '+(idx+1)}</span><span style="color:#888;font-size:0.7rem;">${lvl.gridRows}x${lvl.gridCols}</span>`;
+                        item.addEventListener('click', () => loadCustomLevel(lvl));
+                        const delBtn = document.createElement('button');
+                        delBtn.textContent = '×';
+                        delBtn.style.cssText =
+                            'background:#ff5252;color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-weight:700;';
+                        delBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            customLevels.splice(idx, 1);
+                            localStorage.setItem('algoritmikaCustomLevels', JSON.stringify(customLevels));
+                            renderMyLevels();
+                        });
+                        item.appendChild(delBtn);
+                        myLevelsList.appendChild(item);
+                    });
+                }
+            }
+
+            function toggleEditorMode() {
+                isEditorMode = !isEditorMode;
+                if (isEditorMode) {
+                    sidePanel.style.display = 'none';
+                    editorPanel.style.display = 'flex';
+                    btnEditorToggle.textContent = '🎮 Играть';
+                    initEditorGrid();
+                    renderEditorGrid();
+                    updatePaletteAvailability();
+                    starsHeader.textContent = '⭐ 0 / 0';
+                    levelBadge.textContent = 'Редактор';
+                    btnNext.style.display = 'none';
+                } else {
+                    sidePanel.style.display = 'flex';
+                    editorPanel.style.display = 'none';
+                    btnEditorToggle.textContent = '🛠 Редактор';
+                    loadLevel(currentLevelIndex);
+                }
+            }
+
+            // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
+            btnRun.addEventListener('click', () => {
+                if (isExecuting) { executionAborted = true;
+                    btnRun.disabled = true; return; }
+                const flatBlocks = flattenProgram(programRoot, 0, []);
+                if (flatBlocks.length === 0) { showErrorToast('Добавь хотя бы один блок в программу! 🧩'); return; }
+                btnRun.textContent = '⏹ Стоп';
+                btnRun.style.background = '#e74c3c';
+                btnRun.style.boxShadow = '0 3px 12px rgba(231,76,60,0.3)';
+                executeProgram().then(() => {
+                    btnRun.textContent = '▶ Запустить';
+                    btnRun.style.background = '';
+                    btnRun.style.boxShadow = '';
+                    btnRun.disabled = false;
+                });
+            });
+
+            btnReset.addEventListener('click', () => {
+                if (isExecuting) { executionAborted = true;
+                    setTimeout(() => { if (!isEditorMode) loadLevel(currentLevelIndex);
+                        else renderEditorGrid(); }, 300); return; }
+                if (!isEditorMode) loadLevel(currentLevelIndex);
+                else renderEditorGrid();
+            });
+
+            btnHint.addEventListener('click', () => {
+                if (isExecuting) return;
+                if (isEditorMode) showErrorToast('💡 Это твой уровень! Придумай задачу сам.');
+                else showErrorToast('💡 ' + levels[currentLevelIndex].hint);
+            });
+
+            btnNext.addEventListener('click', () => { if (isExecuting) return;
+                goToNextLevel(); });
+
+            btnEditorToggle.addEventListener('click', toggleEditorMode);
+
+            blockPalette.addEventListener('click', (e) => {
+                if (isExecuting) return;
+                const btn = e.target.closest('.palette-block');
+                if (!btn) return;
+                const cmd = btn.dataset.cmd;
+                if (!isEditorMode) {
+                    const level = levels[currentLevelIndex];
+                    if (!level.availableBlocks.includes(cmd)) { showErrorToast(
+                            'Этот блок откроется на следующих уровнях! 🔒'); return; }
+                }
+                addBlockToContainer(currentContainer, cmd);
+                renderProgram();
+                programArea.scrollTop = programArea.scrollHeight;
+            });
+
+            modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+
+            window.addEventListener('resize', () => { updatePaletteAvailability();
+                renderGrid(); });
+
+            document.addEventListener('touchstart', function(e) {
+                if (e.target.closest('.palette-block') || e.target.closest('.btn') || e.target.closest(
+                        '.program-block') || e.target.closest('.delete-btn')) {
+                    if (e.touches.length > 1) e.preventDefault();
+                }
+            }, { passive: false });
+
+            document.addEventListener('dblclick', function(e) {
+                if (e.target.closest('button') || e.target.closest('.palette-block') || e.target.closest(
+                        '.program-block')) e.preventDefault();
+            }, { passive: false });
+
+            // Редактор: инструменты
+            editorTools.addEventListener('click', (e) => {
+                const btn = e.target.closest('.tool-btn[data-tool]');
+                if (!btn) return;
+                currentTool = btn.dataset.tool;
+                editorTools.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+
+            dirUp.addEventListener('click', () => { editorStartDir = 0;
+                updateDirDisplay();
+                renderEditorGrid(); });
+            dirRight.addEventListener('click', () => { editorStartDir = 1;
+                updateDirDisplay();
+                renderEditorGrid(); });
+            dirDown.addEventListener('click', () => { editorStartDir = 2;
+                updateDirDisplay();
+                renderEditorGrid(); });
+            dirLeft.addEventListener('click', () => { editorStartDir = 3;
+                updateDirDisplay();
+                renderEditorGrid(); });
+
+            applySizeBtn.addEventListener('click', () => {
+                const newRows = parseInt(rowsInput.value, 10);
+                const newCols = parseInt(colsInput.value, 10);
+                if (isNaN(newRows) || isNaN(newCols) || newRows < 3 || newRows > 10 || newCols < 3 || newCols > 10) {
+                    showErrorToast('Размер должен быть от 3 до 10!');
+                    return;
+                }
+                editorRows = newRows;
+                editorCols = newCols;
+                initEditorGrid();
+                renderEditorGrid();
+            });
+
+            saveLevelBtn.addEventListener('click', () => {
+                const name = prompt('Название уровня:', 'Мой уровень ' + new Date().toLocaleDateString());
+                if (name) saveLevelToStorage(name);
+            });
+
+            shareLevelBtn.addEventListener('click', shareLevel);
+
+            clearEditorBtn.addEventListener('click', () => {
+                initEditorGrid();
+                renderEditorGrid();
+            });
+
+            // Проверка загрузки уровня из URL
+            function checkUrlCustomLevel() {
+                const params = new URLSearchParams(window.location.search);
+                const custom = params.get('custom');
+                if (custom) {
+                    try {
+                        const json = decodeURIComponent(escape(atob(custom)));
+                        const data = JSON.parse(json);
+                        if (data.grid && Array.isArray(data.grid) && data.gridRows && data.gridCols) {
+                            editorRows = data.gridRows;
+                            editorCols = data.gridCols;
+                            editorGrid = data.grid;
+                            editorStartX = data.startX || 0;
+                            editorStartY = data.startY || 0;
+                            editorStartDir = data.startDir || 1;
+                            rowsInput.value = editorRows;
+                            colsInput.value = editorCols;
+                            updateDirDisplay();
+                            if (!isEditorMode) toggleEditorMode();
+                            showErrorToast('🔗 Загружен уровень по ссылке!');
+                        }
+                    } catch (e) {
+                        console.warn('Не удалось загрузить уровень из URL', e);
+                    }
+                }
+            }
+
+            // Инициализация
+            function initGame() {
+                unlockedLevels = Math.min(levels.length, Math.max(1, unlockedLevels));
+                currentLevelIndex = 0;
+                loadLevel(currentLevelIndex);
+                updatePaletteAvailability();
+                renderMyLevels();
+                checkUrlCustomLevel();
+            }
+
+            initGame();
+            console.log('🤖 Алгоритмика — игра + редактор уровней готовы!');
+        })();
+    </script>
+</body>
+</html>
